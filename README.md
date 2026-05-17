@@ -7,11 +7,15 @@ PNG; before Slack upload the image is **center-cropped to a square**, resized
 to **1024×1024**, and saved under `output/` with a timestamped filename, then
 **`users.setPhoto`** is called.
 
-Optionally (**`UPDATE_SLACK_TITLE`**), after the photo uploads successfully the
-job also calls Gemini with a **text-only** model (`GEMINI_TEXT_MODEL`, default
-`gemini-2.5-flash`), generates **one satirical corporate-style phrase**, and sends
-it to Slack (**`users.profile.set`**) inside a **`profile`** JSON object (recommended
-by Slack — not raw form fields). That updates only **`title`** (Cargo / Job title).
+Optional Slack **job titles** (**`UPDATE_SLACK_TITLE`** environment variable): after
+the photo uploads successfully, the job can call Gemini with a **text-only**
+model (`GEMINI_TEXT_MODEL`, default `gemini-2.5-flash`), generate **one
+satirical corporate-style phrase**, and update Slack’s **`title`** field (Cargo /
+Job title) via **`users.profile.set`**. Enable it by setting **`UPDATE_SLACK_TITLE`**
+to **`1`**, **`true`**, **`yes`**, or **`on`** in `.env` (see Environment variables below).
+**This step is best-effort**: token scope, workspace policies, SCIM/HRIS, or Slack
+API quirks can make the call return success while the visible title does not
+match what was sent, or block updates entirely.
 
 If that step fails, the job **logs a warning** and exits **0** without changing the
 prior title.
@@ -106,7 +110,7 @@ Ensure `.env` exists and mount paths in `docker-compose.yml` match your machine.
 | `GEMINI_API_KEY` | Gemini Developer API key. |
 | `GEMINI_IMAGE_MODEL` | Model id (default `gemini-2.5-flash-image`). |
 | `GEMINI_TEXT_MODEL` | Text-capable Gemini id for **`UPDATE_SLACK_TITLE`** only (default `gemini-2.5-flash`). |
-| `UPDATE_SLACK_TITLE` | If `1` / `true` / `yes` / `on`, generate and push **Cargo / job title** after each successful **`users.setPhoto`**, including runs that fall back to the **raw base photo** (no AI avatar) — text generation is still attempted. |
+| `UPDATE_SLACK_TITLE` | Optional. If `1` / `true` / `yes` / `on`, generate and push **Cargo / job title** after each successful **`users.setPhoto`**, including runs that fall back to the **raw base photo** (no AI avatar) — text generation is still attempted. **May not apply or may disagree with the UI** depending on workspace controls and Slack behavior; treat as experimental. |
 | `TZ` | IANA zone, e.g. `America/Santiago`. |
 | `RUN_SEED` | Optional integer to fix random choices. |
 | `STRICT_GEMINI` | If `1` / `true` / `yes` / `on`, the run **fails** when Gemini hits quota or certain rate limits. If unset (default), some **429 / exhausted quota** cases fall back to uploading the **raw base photo** (no AI edit). See `.env.example`. |
@@ -138,7 +142,11 @@ cron, etc.) to invoke the same command or `docker compose run` on your cadence.
   lists are rejected at startup.
 - **Slack `bad_image`**: rare if the post-process step ran; the code expects a
   decodable raster and outputs **1024×1024** square PNG for Slack.
+- **Optional Slack titles (`UPDATE_SLACK_TITLE`)**: off by default; turn on via env when
+  you want the extra step. Even when enabled, **`title`** updates can **fail silently or
+  disagree with the Slack UI** (workspace admin settings, SSO/SCIM, Enterprise rules,
+  or token/user mismatch).
 - **Title mismatch after `ok:true`**: the run prints **`describe_slack_token_user`**
   **before** writing the phrase — **`login=` / `user_id=` must be Camilo Henríquez’s
-  account**. If another user installs the app, **`users.profile:set` updates THAT
+  account**. If another user installs the app, **`users.profile.set` updates THAT
   user’s Cargo**, while the modal you screenshot belongs to yours (old «programador…» unchanged).
