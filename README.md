@@ -122,3 +122,4 @@ cron, etc.) to invoke the same command or `docker compose run` on your cadence.
   lists are rejected at startup.
 - **Slack `bad_image`**: rare if the post-process step ran; the code expects a
   decodable raster and outputs **1024×1024** square PNG for Slack.
+# Auto-Slack-Avatar
