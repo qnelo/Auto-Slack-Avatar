@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from io import BytesIO
 
-import requests
 from PIL import Image
-
-SLACK_SET_PHOTO_URL = "https://slack.com/api/users.setPhoto"
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 
 def image_bytes_to_slack_square_png(data: bytes, side: int = 1024) -> bytes:
@@ -29,28 +28,20 @@ def image_bytes_to_slack_square_png(data: bytes, side: int = 1024) -> bytes:
 
 def upload_profile_photo(
     *,
-    token: str,
+    client: WebClient,
     image_bytes: bytes,
     filename: str = "avatar.png",
 ) -> None:
     """Upload PNG bytes as the authenticated user's profile photo."""
-    headers = {"Authorization": f"Bearer {token}"}
-    files = {
-        "image": (
-            filename,
-            image_bytes,
-            "image/png",
-        ),
-    }
-    response = requests.post(
-        SLACK_SET_PHOTO_URL,
-        headers=headers,
-        files=files,
-        timeout=120,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    if not payload.get("ok"):
-        err = payload.get("error", "unknown_error")
+    stream = BytesIO(image_bytes)
+    stream.name = filename
+    try:
+        client.users_setPhoto(image=stream)
+    except SlackApiError as exc:
+        err = (
+            exc.response.get("error", "unknown_error")
+            if exc.response is not None
+            else "unknown_error"
+        )
         msg = f"Slack users.setPhoto failed: {err}"
-        raise RuntimeError(msg)
+        raise RuntimeError(msg) from exc

@@ -28,7 +28,9 @@ class Config:
     slack_user_token: str
     gemini_api_key: str
     gemini_image_model: str
+    gemini_text_model: str
     strict_gemini: bool
+    update_slack_title: bool
     timezone: str
     assets_dir: Path
     prompts_path: Path
@@ -54,6 +56,14 @@ class Config:
             msg = "GEMINI_IMAGE_MODEL must not be empty"
             raise ValueError(msg)
         strict = _truthy_env("STRICT_GEMINI")
+        title_up = _truthy_env("UPDATE_SLACK_TITLE")
+        text_model = os.environ.get(
+            "GEMINI_TEXT_MODEL",
+            "gemini-2.5-flash",
+        ).strip()
+        if not text_model:
+            msg = "GEMINI_TEXT_MODEL must not be empty"
+            raise ValueError(msg)
         tz = os.environ.get("TZ", "UTC").strip() or "UTC"
         assets = Path(os.environ.get("ASSETS_DIR", "assets/images"))
         prompts = Path(os.environ.get("PROMPTS_PATH", "prompts.json"))
@@ -63,7 +73,9 @@ class Config:
             slack_user_token=slack,
             gemini_api_key=gemini_key,
             gemini_image_model=model,
+            gemini_text_model=text_model,
             strict_gemini=strict,
+            update_slack_title=title_up,
             timezone=tz,
             assets_dir=assets,
             prompts_path=prompts,

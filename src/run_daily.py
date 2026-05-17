@@ -10,9 +10,11 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dotenv import load_dotenv
 from google.genai.errors import ClientError
+from slack_sdk import WebClient
 
 from src.config import Config
 from src.gemini_image import generate_edited_png
+from src.gemini_title import generate_slack_profile_title
 from src.output_paths import avatar_output_filename
 from src.prompts_json import WEEKDAY_KEYS, combine_with_base, load_prompts
 from src.select_assets import list_image_paths
@@ -20,6 +22,7 @@ from src.slack_photo import (
     image_bytes_to_slack_square_png,
     upload_profile_photo,
 )
+from src.slack_profile import describe_slack_token_user, set_profile_title
 
 _logger = logging.getLogger(__name__)
 
@@ -130,9 +133,10 @@ def run() -> int:
         return 1
     _logger.info("saved_output=%s", out_path)
 
+    slack_client = WebClient(token=cfg.slack_user_token, timeout=120)
     try:
         upload_profile_photo(
-            token=cfg.slack_user_token,
+            client=slack_client,
             image_bytes=slack_png,
             filename=out_name,
         )
@@ -141,6 +145,25 @@ def run() -> int:
         return 1
 
     _logger.info("Slack profile photo updated.")
+
+    if cfg.update_slack_title:
+        try:
+            _logger.info(
+                "Before title update, Slack token is: %s",
+                describe_slack_token_user(client=slack_client),
+            )
+            phrase = generate_slack_profile_title(
+                api_key=cfg.gemini_api_key,
+                model=cfg.gemini_text_model,
+            )
+            set_profile_title(client=slack_client, title=phrase)
+            _logger.info("Slack profile title updated (Gemini): %s", phrase)
+        except Exception:
+            _logger.warning(
+                "Slack profile title update skipped (title left unchanged)",
+                exc_info=True,
+            )
+
     return 0
 
 
