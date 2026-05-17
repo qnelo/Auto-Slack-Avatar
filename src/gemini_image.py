@@ -154,4 +154,3 @@ def generate_edited_png(
             time.sleep(delay)
     assert last is not None
     raise last
-
