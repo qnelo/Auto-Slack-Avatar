@@ -5,4 +5,5 @@ __pycache__/
 output/*
 !output/.gitkeep
 .DS_Store
-assets/images/
+assets/images/*
+!assets/images/.gitkeep
