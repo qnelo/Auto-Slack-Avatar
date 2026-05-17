@@ -1,0 +1,52 @@
+{
+  "base_prompt": "Objective: produce a Slack profile avatar from the supplied photo. The image must be square. Center the protagonist's face in the frame with natural headroom so it reads clearly at small sizes. Keep identity consistent: facial features must remain the same person as in the original—recognizable and not swapped or remodeled into another face.",
+  "monday": [
+    "Mood: post-weekend slump—dragging yourself back into work mode. Lukewarm-coffee steam wafting, heavy Monday morning vibes. Soft cinematic light, dusty blue-grey grade, weary but gentle humor.",
+    "Mood: zero motivation Monday. Drizzle-soft window blur behind subject, sleepy half-smile exaggeration kept subtle—studio Ghibli–soft illustrative wash, pastel gloom cozy.",
+    "Mood: the desk feels too far away. Mild reluctance caricature ink-and-wash portrait: tiny sigh energy, understated bags under eyes, minimal lines, monochrome with one tired accent color.",
+    "Mood: still half on weekend mentally. Foggy depth-of-field haze curling at borders, muted palette, dreamy reluctance—you are present but barely.",
+    "Mood: fluorescent Monday fatigue. Thin cool fluorescent rim with tired office boredom atmosphere, restrained minimal background, understated slouch-in-chair spirit without changing pose much."
+  ],
+  "tuesday": [
+    "Mood: exhausted but trapped midweek—you have strength left yet the week stretches ahead. Zinc-grey palette with a drained candle-flame analogy in warm highlights, moody noir portrait grading.",
+    "Mood: second-day grind; legs feel heavy metaphorically. Desaturated teal shadows, gritty soft texture overlay, restrained zombie-to-still-alive Tuesday humor.",
+    "Mood: running on fumes and lukewarm coffee. Cross-hatched graphic novel shading, edgy tired eyes kept stylized—not grotesque—clock ticks implied by subtle circular bokeh motifs.",
+    "Mood: the calendar mocks you days left abound. Moody overcast backlight, understated slouch-neck tension, earthy browns fatigue palette photoreal-but-soft.",
+    "Mood: midweek slump acceleration. Grainy indie-film LUT, sleepy micro-expression, cluttered-minimal blurred desk crumbs of chaos at edges implying many tasks looming."
+  ],
+  "wednesday": [
+    "Mood: quiet resignation—you accept the treadmill but fatigue shows. Stable composed pace: balanced split lighting dusty rose and dove grey stoic cinematography.",
+    "Mood: powering through anyway. Controlled brushstroke gouache illustration clean edges tired-smile symbolism determined half-lidded serenity.",
+    "Mood: hump-day endurance low buzz hum of effort. Neon outline minimal cyber-noir subdued voltage tired pulse steady rhythmic glow lines.",
+    "Mood: internal sigh external calm. Ceramic matte finish stylized avatar flat vector restrained palette bureaucracy surviving Wednesday blues.",
+    "Mood: functional autopilot weary rhythm. Gentle motion-blur halo around shoulders suggesting movement while face stays sharp centred stoic commuter-trance vignette."
+  ],
+  "thursday": [
+    "Mood: weekend already whispering—you perk up imagining Friday night. Amber golden-hour backlight warmer palette lifted shoulders lighter eyes sparkling anticipation.",
+    "Mood: hope returns Thursday spark. Citrus gradient rim light airy bokeh skyline suggestion subtle weekend horizon glow illustrative cheer.",
+    "Mood: almost-there euphoria building. Punchy pastel pop-art halftone Friday-is-coming kinetic energy typography-free visual rhythm brighter cheek highlights.",
+    "Mood: daydream escape hatch open. Lens-flare flirtation dreamy beach blur abstract far background warm lens breathe optimistic vignette softened.",
+    "Mood: buoyant stamina returns. Retro Saturday-morning-cartoon pastel bounce lighting crisp friendly cel-shaded cheer without caricature betrayal of likeness."
+  ],
+  "friday": [
+    "Mood: wrecked-but-euphoric Friday energy—body tired spirit celebrating. Neon party rim mixed with sleepy smile golden confetti sparkle subtle tasteful euphoria.",
+    "Mood: clock-watching itch end-of-shift glow. Gradient sunset magenta-orange wrap light relaxed shoulders grin relief washed-out dreamy haze happy fatigue.",
+    "Mood: last-hour hero limping to finish line. Dynamic low-key spotlight disco dust motes restrained glam shine TGIF triumphant slump.",
+    "Mood: happy drained battery at 100% feelings. Synthwave pastel streaks mellow celebration tired eyes sparkly contrast playful 3-D clay-soft Friday freedom.",
+    "Mood: social battery almost empty—but weekend incoming. Chill lounge blur warm string lights bokeh decompress smile tired satisfied portrait glow."
+  ],
+  "saturday": [
+    "Mood: full party mode laughing loud music implied. Jewel-tone dance-floor highlights motion streaks kinetic energy carnival lighting taste without literal crowd.",
+    "Mood: feasting glorious chaos—finger-food picnic spread blur rich saturated foodie palette warm buttery highlights indulgent caricature-soft appetite joy.",
+    "Mood: late-night bar sparkle glasses clink sparkle bokeh magenta cyan split tone festive flush cheeks celebratory caricature restrained.",
+    "Mood: friends-and-drinks exuberance. Ice-cold cocktail condensation aesthetic chromatic aberration punk-neon euphoria wild hair wind implied motion tasteful exaggeration.",
+    "Mood: dance-till-you-drop Saturday. Strobe-softened prism streaks sweaty sheen glamour lighting high-energy nightclub palette still centered composed face."
+  ],
+  "sunday": [
+    "Mood: pure restoration—eating brunch with abandon lazy sunlight. Pancake syrup honey glow buttery window light fluff-cloud Sunday bliss soft illustration.",
+    "Mood: happy food-coma hammock daydream pastel sky implied garden picnic bokeh serotonin palette lazy satisfied grin.",
+    "Mood: life is good unplugged roam. Wanderlust soft landscape gradient behind subject watercolor travel-poster serenity gentle wind hair motion.",
+    "Mood: quality-time Sunday slow living. Herbal tea steam sage palette linen textures calm dopamine wholesome cottagecore portrait glow centred peace.",
+    "Mood: grateful recharge big meal memory. Roast-dinner amber candlelight hearth warmth cranberry ruby accents fullness comfort satisfaction warm grain film still."
+  ]
+}
