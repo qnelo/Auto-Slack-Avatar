@@ -1,0 +1,20 @@
+# Optional compose fragment: mounts a service account JSON from the host into the deploy
+# container and sets GOOGLE_APPLICATION_CREDENTIALS.
+#
+# Use when you authenticate deploy with a key file (not only gcloud user login).
+# From the repo root either:
+#   - add to .env: COMPOSE_FILE=docker-compose.yml:docker-compose.gcp-sa.yml
+#   - or: docker compose -f docker-compose.yml -f docker-compose.gcp-sa.yml run --rm deploy …
+#
+# Place the key at credentials/gcp-sa.json (default) or set GCP_SERVICE_ACCOUNT_KEY to another
+# host path. Prefer "./relative/path.json" (with ./) or an absolute path so Compose treats it as a bind mount.
+services:
+  deploy:
+    volumes:
+      # Long-form bind avoids short-syntax "undefined volume" when the path is mis-parsed.
+      - type: bind
+        source: ${GCP_SERVICE_ACCOUNT_KEY:-./credentials/gcp-sa.json}
+        target: /workspace/credentials/gcp-sa.json
+        read_only: true
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /workspace/credentials/gcp-sa.json

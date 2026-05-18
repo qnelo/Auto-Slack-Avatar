@@ -9,3 +9,19 @@ services:
       - ./assets/images:/app/assets/images:ro
       - ./prompts.json:/app/prompts.json:ro
       - ./output:/app/output:rw
+
+  deploy:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    env_file:
+      - .env
+    working_dir: /workspace
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - .:/workspace:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Do not mount host ~/.config/gcloud here: deploy should use the service-account key from
+      # docker-compose.gcp-sa.yml, not the developer's user from the host (see docker-compose.gcloud-user.yml).
+      # Do not mount host ~/.docker: permission issues; gcloud configure-docker uses /root/.docker in-container.

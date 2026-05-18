@@ -1,0 +1,7 @@
+# Optional: reuse a human gcloud login from the host inside the `deploy` container.
+# Merge with: COMPOSE_FILE=docker-compose.yml:docker-compose.gcloud-user.yml
+# (you can combine with docker-compose.gcp-sa.yml if both are needed; SA activation wins in scripts.)
+services:
+  deploy:
+    volumes:
+      - ${HOME}/.config/gcloud:/root/.config/gcloud:rw
