@@ -1,0 +1,18 @@
+FROM google/cloud-sdk:slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl make \
+    && rm -rf /var/lib/apt/lists/*
+
+# docker.io on Debian often ships only dockerd; use the official static Docker CLI for the host API.
+ARG DOCKER_CLI_VERSION=27.4.0
+RUN ARCH="$(dpkg --print-architecture)" \
+    && case "$ARCH" in \
+         amd64) DOCKER_ARCH=x86_64 ;; \
+         arm64) DOCKER_ARCH=aarch64 ;; \
+         *) echo "unsupported arch: ${ARCH}" >&2; exit 1 ;; \
+       esac \
+    && curl -fsSL "https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${DOCKER_CLI_VERSION}.tgz" \
+        | tar xz --strip-components=1 -C /usr/local/bin docker/docker
+
+WORKDIR /workspace

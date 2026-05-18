@@ -7,3 +7,6 @@ output/*
 .DS_Store
 assets/images/*
 !assets/images/.gitkeep
+credentials/*
+!credentials/.gitkeep
+as/
