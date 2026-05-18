@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import mimetypes
 import re
 import time
 from io import BytesIO
@@ -19,23 +18,25 @@ _logger = logging.getLogger(__name__)
 
 _RETRY_IN_MESSAGE_RE = re.compile(r"Please retry in ([0-9.]+)s", re.IGNORECASE)
 
+# Max square edge for Gemini input (aligns with common "1K" ~1024px tier).
+_GEMINI_INPUT_SIDE = 1024
 
-def _mime_for_path(image_path: Path) -> str:
-    guessed, _ = mimetypes.guess_type(str(image_path))
-    if guessed:
-        return guessed
-    suf = image_path.suffix.lower()
-    if suf == ".png":
-        return "image/png"
-    if suf in (".jpg", ".jpeg"):
-        return "image/jpeg"
-    if suf == ".webp":
-        return "image/webp"
-    if suf == ".heic":
-        return "image/heic"
-    if suf == ".heif":
-        return "image/heif"
-    return "application/octet-stream"
+
+def _input_image_to_1k_square_png(image_path: Path) -> bytes:
+    """Center-crop to square, resize to fixed edge length, return PNG bytes."""
+    image = Image.open(image_path).convert("RGBA")
+    width, height = image.size
+    edge = min(width, height)
+    left = (width - edge) // 2
+    top = (height - edge) // 2
+    image = image.crop((left, top, left + edge, top + edge))
+    image = image.resize(
+        (_GEMINI_INPUT_SIDE, _GEMINI_INPUT_SIDE),
+        Image.Resampling.LANCZOS,
+    )
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def _free_tier_quota_unavailable(exc: ClientError) -> bool:
@@ -77,17 +78,19 @@ def _generate_edited_png_once(
 ) -> bytes:
     """Single API call; raises :class:`ClientError` on HTTP/API errors."""
     client = genai.Client(api_key=api_key)
-    raw = image_path.read_bytes()
-    mime = _mime_for_path(image_path)
+    prepared_png = _input_image_to_1k_square_png(image_path)
     response = client.models.generate_content(
         model=model,
         contents=[
             types.Part.from_text(text=prompt),
-            types.Part.from_bytes(data=raw, mime_type=mime),
+            types.Part.from_bytes(data=prepared_png, mime_type="image/png"),
         ],
         config=types.GenerateContentConfig(
             response_modalities=["IMAGE"],
-            image_config=types.ImageConfig(aspect_ratio="1:1"),
+            image_config=types.ImageConfig(
+                aspect_ratio="1:1",
+                image_size="0.5K",
+            ),
         ),
     )
     parts = getattr(response, "parts", None)
