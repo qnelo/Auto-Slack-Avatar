@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 import logging
 import re
 import time
@@ -16,6 +17,10 @@ from PIL import Image
 from pillow_heif import register_heif_opener
 
 register_heif_opener()
+try:
+    _pillow_heif_ver = importlib.metadata.version("pillow-heif")
+except importlib.metadata.PackageNotFoundError:
+    _pillow_heif_ver = "unknown"
 
 _logger = logging.getLogger(__name__)
 
@@ -23,6 +28,16 @@ _RETRY_IN_MESSAGE_RE = re.compile(r"Please retry in ([0-9.]+)s", re.IGNORECASE)
 
 # Max square edge for Gemini input (aligns with common "1K" ~1024px tier).
 _GEMINI_INPUT_SIDE = 1024
+
+_heif_support_logged = False
+
+
+def _log_heif_support_once() -> None:
+    global _heif_support_logged
+    if _heif_support_logged:
+        return
+    _heif_support_logged = True
+    _logger.info("HEIC/HEIF decode enabled (pillow-heif %s)", _pillow_heif_ver)
 
 
 def _input_image_to_1k_square_png(image_path: Path) -> bytes:
@@ -130,6 +145,7 @@ def generate_edited_png(
     Retries HTTP 429 a few times when the API suggests a retry delay, except
     when the free tier reports ``limit: 0`` (no point waiting).
     """
+    _log_heif_support_once()
     last: ClientError | None = None
     for attempt in range(max_429_attempts):
         try:
