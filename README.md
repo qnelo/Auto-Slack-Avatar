@@ -57,6 +57,25 @@ Edit **`prompts.json`**: a single **JSON object** with **no extra keys**. Requir
 - **`monday` … `sunday`**: each value is a **JSON array of strings**; each day
   must have **at least one** non-empty string after trimming.
 
+### How `prompts.json` relates to base photos
+
+There are **no cross-references** between sources: the prompts file (**`prompts.json`**
+by default, override **`PROMPTS_PATH`**) does not name image paths, and files under
+**`assets/images/`** (override **`ASSETS_DIR`**) do not reference the JSON. They are two
+independent inputs for every run.
+
+- **`prompts.json`** provides **text only** — the editing instructions Gemini follows
+  (`base_prompt`, then one randomly chosen entry from today's weekday array).
+- The **asset directory** provides **pixels only** — the base photo Gemini edits.
+
+Gemini receives **one randomly chosen eligible image file** plus **that combined prompt**
+(no fixed pairing between a specific prompt line and a specific filename).
+
+Add more qualified images under the asset directory if you want more variety in **which photo**
+runs pick; add more strings under a weekday array if you want more variety in **how** that day's
+instructions read. Exact `random.choice` order after **`RUN_SEED` / timestamp seeding**
+is spelled out under **Randomness**.
+
 The text sent to Gemini is **`base_prompt`**, a blank line, then the chosen
 weekday string (`base` + day-specific stylistic prompt).
 
