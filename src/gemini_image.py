@@ -13,6 +13,9 @@ from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
 from PIL import Image
+from pillow_heif import register_heif_opener
+
+register_heif_opener()
 
 _logger = logging.getLogger(__name__)
 
