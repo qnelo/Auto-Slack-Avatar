@@ -9,4 +9,5 @@ assets/images/*
 !assets/images/.gitkeep
 credentials/*
 !credentials/.gitkeep
+vacations.json
 as/

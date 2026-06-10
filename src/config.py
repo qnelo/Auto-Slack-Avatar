@@ -34,6 +34,7 @@ class Config:
     timezone: str
     assets_dir: Path
     prompts_path: Path
+    vacations_path: Path
     output_dir: Path
     run_seed_override: int | None
 
@@ -67,6 +68,7 @@ class Config:
         tz = os.environ.get("TZ", "UTC").strip() or "UTC"
         assets = Path(os.environ.get("ASSETS_DIR", "assets/images"))
         prompts = Path(os.environ.get("PROMPTS_PATH", "prompts.json"))
+        vacations = Path(os.environ.get("VACATIONS_PATH", "vacations.json"))
         out = Path(os.environ.get("OUTPUT_DIR", "output"))
         seed = _parse_optional_seed(os.environ.get("RUN_SEED"))
         return cls(
@@ -79,6 +81,7 @@ class Config:
             timezone=tz,
             assets_dir=assets,
             prompts_path=prompts,
+            vacations_path=vacations,
             output_dir=out,
             run_seed_override=seed,
         )

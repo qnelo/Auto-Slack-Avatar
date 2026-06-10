@@ -2,7 +2,9 @@
 
 Generates a square profile image with **Google Gemini** (`GEMINI_IMAGE_MODEL`,
 default `gemini-2.5-flash-image`) from a random base photo and prompts for
-**today’s weekday** (see `prompts.json`). The Gemini reply is converted to
+**today’s weekday** (see `prompts.json`), or from the **`holidays`** prompt list
+when today’s calendar date appears in your optional **`vacations.json`** calendar.
+The Gemini reply is converted to
 PNG; before Slack upload the image is **center-cropped to a square**, resized
 to **1024×1024**, and saved under `output/` with a timestamped filename, then
 **`users.setPhoto`** is called.
@@ -56,6 +58,10 @@ Edit **`prompts.json`**: a single **JSON object** with **no extra keys**. Requir
   avatar constraints, style rules, etc.).
 - **`monday` … `sunday`**: each value is a **JSON array of strings**; each day
   must have **at least one** non-empty string after trimming.
+- **`holidays`**: JSON array of strings (at least one non-empty entry after
+  trimming). Used **only** when today’s date matches an entry in
+  **`vacations.json`** (see **Vacation days** below); otherwise weekday prompts
+  apply.
 
 ### How `prompts.json` relates to base photos
 
@@ -65,7 +71,8 @@ by default, override **`PROMPTS_PATH`**) does not name image paths, and files un
 independent inputs for every run.
 
 - **`prompts.json`** provides **text only** — the editing instructions Gemini follows
-  (`base_prompt`, then one randomly chosen entry from today's weekday array).
+  (`base_prompt`, then one randomly chosen entry from today's **`holidays`** or
+  weekday array).
 - The **asset directory** provides **pixels only** — the base photo Gemini edits.
 
 Gemini receives **one randomly chosen eligible image file** plus **that combined prompt**
@@ -77,10 +84,92 @@ instructions read. Exact `random.choice` order after **`RUN_SEED` / timestamp se
 is spelled out under **Randomness**.
 
 The text sent to Gemini is **`base_prompt`**, a blank line, then the chosen
-weekday string (`base` + day-specific stylistic prompt).
+weekday or holiday string (`base` + day-specific stylistic prompt).
 
 Gemini may return image bytes in the model’s format; the code **opens the result
 with Pillow and saves PNG (RGBA)** before the Slack resize step.
+
+### Vacation days (`vacations.json`)
+
+Optional personal calendar: when **today** (in **`vacations.json` → `timezone`**)
+matches a date in **`dates`**, the run picks from **`holidays`** in
+**`prompts.json`** instead of the weekday list.
+
+#### Setup
+
+```bash
+cp vacations.example.json vacations.json
+# Edit timezone and dates in vacations.json
+```
+
+- **`vacations.json`** is **gitignored** (like `.env` and photos under
+  **`assets/images/`**). The repo ships only
+  [`vacations.example.json`](vacations.example.json) as a template.
+- Override the path with **`VACATIONS_PATH`** in `.env` (default
+  `vacations.json`).
+
+#### JSON schema
+
+```json
+{
+  "timezone": "America/Santiago",
+  "dates": [
+    "2026-07-15",
+    "2026-07-16"
+  ]
+}
+```
+
+| Field | Required (if file exists) | Description |
+|-------|---------------------------|-------------|
+| `timezone` | Yes | IANA zone, e.g. `America/Santiago`. Defines which calendar day counts as “today” when matching `dates`. |
+| `dates` | Yes | List of **`YYYY-MM-DD`** strings (no time component). `[]` means no vacation days are active. |
+
+#### Timezones: `TZ` vs `vacations.timezone`
+
+Two settings control different things:
+
+| Config | Used for |
+|--------|----------|
+| **`TZ`** (`.env`) | Weekday key (`monday`…`sunday`), log timestamps, output filename `avatar_YYYY-MM-DD_HHMMSS.png` |
+| **`vacations.json` → `timezone`** | Only the “is today a vacation day?” check against `dates` |
+
+Example: a Cloud Run Job with **`TZ=UTC`** can still use
+**`"timezone": "America/Santiago"`** in `vacations.json` so July 15 in Chile
+triggers **`holidays`**, even when UTC is still July 14 near midnight.
+
+- **Recommendation**: set `vacations.timezone` to your real-life IANA zone
+  (e.g. `America/Santiago`). **`TZ`** may match or differ depending on how you
+  want logs and output filenames labeled.
+- **No fallback**: if `vacations.json` exists, `timezone` must be a valid IANA
+  name; invalid values fail at startup with a clear error.
+
+#### Missing file vs empty dates
+
+- **No `vacations.json`** → weekday-only behavior (no error).
+- **File present, `dates: []`** → no day is treated as vacation; the file can
+  act as a placeholder until you add dates.
+
+#### Docker (local)
+
+[`docker-compose.yml`](docker-compose.yml) bind-mounts `./vacations.json` into
+the container. If the file is missing, **`make build-local`** and **`make
+run-local`** copy [`vacations.example.json`](vacations.example.json) first so
+the mount and image build succeed.
+
+#### Deploy to GCP
+
+Before **`make deploy`** (or **`make docker-push`**):
+
+1. Create or edit **`vacations.json`** on the machine that runs **`docker build`**
+   (same repo checkout used inside the `deploy` container).
+2. The file is **not committed to git** but is **`COPY`**’d into the app image
+   ([`Dockerfile`](Dockerfile)) and pushed to Artifact Registry.
+3. After changing vacation dates locally, **rebuild and push** the image so
+   Cloud Run picks up the new list.
+
+Production vacation behavior always reflects the **`vacations.json` baked into
+the last deployed image**, not a separate GCP config.
 
 ### Randomness
 
@@ -89,8 +178,10 @@ The process uses **`random.seed`**:
 1. If **`RUN_SEED`** is set in `.env` (integer), that value is used.
 2. Otherwise **`run_seed = int(time.time())`** at startup.
 
-Order after seeding: resolve weekday from **`TZ`** → `random.choice` on that
-day’s prompt list → `random.choice` on the image file list. With
+Order after seeding: optional vacation check (if **`vacations.json`** exists) →
+resolve weekday from **`TZ`** (when not a vacation day) → `random.choice` on
+the active prompt list (**`holidays`** or that weekday) → `random.choice` on the
+image file list. With
 **`UPDATE_SLACK_TITLE`**, Gemini’s phrase is trimmed when needed so it fits Slack’s length
 constraints. Successful **`users.profile.set`** calls **log** `profile['title']`
 as echoed by Slack. The seed is logged so you can replay image/prompt picks for
@@ -190,11 +281,12 @@ For agent-oriented commands and conventions, see [`AGENTS.md`](AGENTS.md).
 | `GEMINI_IMAGE_MODEL` | Model id (default `gemini-2.5-flash-image`). |
 | `GEMINI_TEXT_MODEL` | Text-capable Gemini id for **`UPDATE_SLACK_TITLE`** only (default `gemini-2.5-flash`). |
 | `UPDATE_SLACK_TITLE` | Optional. If `1` / `true` / `yes` / `on`, generate and push **Cargo / job title** after each successful **`users.setPhoto`**, including runs that fall back to the **raw base photo** (no AI avatar) — text generation is still attempted. **May not apply or may disagree with the UI** depending on workspace controls and Slack behavior; treat as experimental. |
-| `TZ` | IANA zone, e.g. `America/Santiago`. |
+| `TZ` | IANA zone, e.g. `America/Santiago`. Drives weekday selection, logs, and output filenames. Does **not** replace **`vacations.json` → `timezone`** for vacation-day matching. |
 | `RUN_SEED` | Optional integer to fix random choices. |
 | `STRICT_GEMINI` | If `1` / `true` / `yes` / `on`, the run **fails** when Gemini hits quota or certain rate limits. If unset (default), some **429 / exhausted quota** cases fall back to uploading the **raw base photo** (no AI edit). See `.env.example`. |
 | `ASSETS_DIR` | Default `assets/images`. |
 | `PROMPTS_PATH` | Default `prompts.json`. |
+| `VACATIONS_PATH` | Default `vacations.json`. Path to the optional vacation calendar; if the file is missing, vacation checks are skipped. |
 | `OUTPUT_DIR` | Default `output`. |
 
 ### GCP and Scheduler (deploy via `deploy` container)
@@ -223,8 +315,16 @@ ruff format src
   try another `GEMINI_IMAGE_MODEL` from the current AI Studio docs.
 - **Quota / 429**: with default settings the job may upload your **original**
   base file if Gemini refuses; set **`STRICT_GEMINI=1`** to fail the run instead.
-- **`prompts.json` errors**: unknown keys, missing `base_prompt`, or empty weekday
-  lists are rejected at startup.
+- **`prompts.json` errors**: unknown keys, missing `base_prompt`, missing
+  **`holidays`**, or empty weekday / holiday lists are rejected at startup.
+- **`vacations.json` errors**: invalid JSON, unknown keys, missing `timezone` or
+  `dates`, invalid IANA timezone, or dates not in **`YYYY-MM-DD`** format.
+- **Vacation prompts not used**: check logs for `vacation_today=false` and
+  `vacations_timezone=…`. Ensure the date in **`dates`** matches the calendar
+  day in **`vacations.timezone`**, not necessarily the day in **`TZ`**.
+- **Vacations work in GCP but not locally (or the reverse)**: the deployed
+  image embeds whatever **`vacations.json`** was present at **`docker build`**
+  time; edit the file and redeploy to sync production.
 - **Slack `bad_image`**: rare if the post-process step ran; the code expects a
   decodable raster and outputs **1024×1024** square PNG for Slack.
 - **Optional Slack titles (`UPDATE_SLACK_TITLE`)**: off by default; turn on via env when

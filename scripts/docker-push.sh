@@ -30,5 +30,8 @@ fi
 gcloud config set project "${GCP_PROJECT}" --quiet
 check_required_gcp_apis
 gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+if [[ ! -f vacations.json ]]; then
+  cp vacations.example.json vacations.json
+fi
 docker build -t "${uri}" .
 docker push "${uri}"

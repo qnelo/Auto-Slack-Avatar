@@ -23,6 +23,7 @@ from src.slack_photo import (
     upload_profile_photo,
 )
 from src.slack_profile import describe_slack_token_user, set_profile_title
+from src.vacations_json import is_vacation_today, load_vacations
 
 _logger = logging.getLogger(__name__)
 
@@ -84,7 +85,28 @@ def run() -> int:
 
     try:
         bundle = load_prompts(cfg.prompts_path)
-        day_prompt = random.choice(bundle.prompts_for_weekday(wkey))
+        vacations = load_vacations(cfg.vacations_path)
+        if vacations is not None:
+            vacation_today = is_vacation_today(vacations)
+            _logger.info(
+                "vacations_timezone=%s vacation_dates_loaded=%s "
+                "vacation_today=%s",
+                vacations.timezone.key,
+                len(vacations.dates),
+                vacation_today,
+            )
+        else:
+            vacation_today = False
+            _logger.info("vacations_file=missing vacation_today=false")
+
+        if vacations is not None and vacation_today:
+            prompt_pool = bundle.prompts_for_holidays()
+            prompt_source = "holidays"
+        else:
+            prompt_pool = bundle.prompts_for_weekday(wkey)
+            prompt_source = wkey
+
+        day_prompt = random.choice(prompt_pool)
         prompt = combine_with_base(bundle.base_prompt, day_prompt)
         images = list_image_paths(cfg.assets_dir)
         image_path = random.choice(images)
@@ -92,6 +114,7 @@ def run() -> int:
         _logger.exception("Assets or prompts error: %s", exc)
         return 1
 
+    _logger.info("prompt_source=%s", prompt_source)
     _logger.info("base_image=%s", image_path)
     _logger.info("day_prompt=%s", day_prompt)
     _logger.info("prompt=%s", prompt)
