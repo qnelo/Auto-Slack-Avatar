@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY pyproject.toml .
 COPY src/ ./src/
 COPY prompts.json .
+COPY vacations.json .
 COPY assets/images/ ./assets/images/
 
 CMD ["python", "-m", "src.run_daily"]

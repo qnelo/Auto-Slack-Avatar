@@ -8,6 +8,7 @@ services:
     volumes:
       - ./assets/images:/app/assets/images:ro
       - ./prompts.json:/app/prompts.json:ro
+      - ./vacations.json:/app/vacations.json:ro
       - ./output:/app/output:rw
 
   deploy:

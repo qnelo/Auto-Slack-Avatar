@@ -4,7 +4,7 @@ Extra context for coding agents working on this repository. Human-oriented docs 
 
 ## Project overview
 
-Python **3.12** CLI + Docker image: picks a weekday prompt from [prompts.json](prompts.json), a random base photo from [assets/images](assets/images), calls **Google Gemini** for an edited image, post-processes to a **1024×1024** PNG, optionally updates Slack **job title**, and uploads the photo via **`users.setPhoto`**. Entry point: [src/run_daily.py](src/run_daily.py). Configuration: [src/config.py](src/config.py) and `.env`.
+Python **3.12** CLI + Docker image: picks a weekday prompt from [prompts.json](prompts.json) (or the **`holidays`** list when today matches [vacations.json](vacations.json), optional and gitignored with [vacations.example.json](vacations.example.json) as template), a random base photo from [assets/images](assets/images), calls **Google Gemini** for an edited image, post-processes to a **1024×1024** PNG, optionally updates Slack **job title**, and uploads the photo via **`users.setPhoto`**. Entry point: [src/run_daily.py](src/run_daily.py). Configuration: [src/config.py](src/config.py) and `.env`.
 
 ## Local development
 

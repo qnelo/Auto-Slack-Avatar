@@ -9,9 +9,11 @@ RUN_DEPLOY := docker compose run --rm -e IN_CONTAINER=1 deploy
 
 # --- Local app image (Docker Compose service avatar-job) ---
 build-local:
+	@test -f vacations.json || cp vacations.example.json vacations.json
 	docker compose build avatar-job
 
 run-local:
+	@test -f vacations.json || cp vacations.example.json vacations.json
 	docker compose run --rm avatar-job
 
 # --- Ruff via Docker (no local ruff install) ---
