@@ -1,7 +1,7 @@
 # Auto Slack Avatar
 
 Generates a square profile image with **Google Gemini** (`GEMINI_IMAGE_MODEL`,
-default `gemini-2.5-flash-image`) from a random base photo and prompts for
+default `gemini-3.1-flash-image`) from a random base photo and prompts for
 **today’s weekday** (see `prompts.json`), or from the **`holidays`** prompt list
 when today’s calendar date appears in your optional **`vacations.json`** calendar.
 The Gemini reply is converted to
@@ -278,7 +278,7 @@ For agent-oriented commands and conventions, see [`AGENTS.md`](AGENTS.md).
 |----------|-------------|
 | `SLACK_USER_TOKEN` | User OAuth token (`xoxp-…`). |
 | `GEMINI_API_KEY` | Gemini Developer API key. |
-| `GEMINI_IMAGE_MODEL` | Model id (default `gemini-2.5-flash-image`). |
+| `GEMINI_IMAGE_MODEL` | Model id (default `gemini-3.1-flash-image`). |
 | `GEMINI_TEXT_MODEL` | Text-capable Gemini id for **`UPDATE_SLACK_TITLE`** only (default `gemini-2.5-flash`). |
 | `UPDATE_SLACK_TITLE` | Optional. If `1` / `true` / `yes` / `on`, generate and push **Cargo / job title** after each successful **`users.setPhoto`**, including runs that fall back to the **raw base photo** (no AI avatar) — text generation is still attempted. **May not apply or may disagree with the UI** depending on workspace controls and Slack behavior; treat as experimental. |
 | `TZ` | IANA zone, e.g. `America/Santiago`. Drives weekday selection, logs, and output filenames. Does **not** replace **`vacations.json` → `timezone`** for vacation-day matching. |

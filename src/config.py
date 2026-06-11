@@ -51,7 +51,7 @@ class Config:
             raise ValueError(msg)
         model = os.environ.get(
             "GEMINI_IMAGE_MODEL",
-            "gemini-2.5-flash-image",
+            "gemini-3.1-flash-image",
         ).strip()
         if not model:
             msg = "GEMINI_IMAGE_MODEL must not be empty"
