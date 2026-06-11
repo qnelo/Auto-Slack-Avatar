@@ -107,7 +107,7 @@ def _generate_edited_png_once(
             response_modalities=["IMAGE"],
             image_config=types.ImageConfig(
                 aspect_ratio="1:1",
-                image_size="0.5K",
+                image_size="512",
             ),
         ),
     )
